@@ -398,18 +398,18 @@
     (setq undo-tree-visualizer-timestamps t)
     (setq undo-tree-visualizer-diff t))
 
-  (use-package company
-    :ensure t
-    :diminish company-mode
-    :config
-    ;;;;(global-company-mode)
-    ;;(add-hook 'after-init-hook #'global-company-mode)
-	(add-hook 'go-mode-hook 'company-mode)
-  ;; Optionally enable completion-as-you-type behavior.
-	(setq company-idle-delay 0)
-	(setq company-minimum-prefix-length 1)
-	(setq company-dabbrev-downcase nil)
-	(setq company-selection-wrap-around t))
+;;  (use-package company
+;;    :ensure t
+;;    :diminish company-mode
+;;    :config
+;;    ;;;;(global-company-mode)
+;;    ;;(add-hook 'after-init-hook #'global-company-mode)
+;;	(add-hook 'go-mode-hook 'company-mode)
+;;    ;; Optionally enable completion-as-you-type behavior.
+;;	(setq company-idle-delay 0)
+;;	(setq company-minimum-prefix-length 1)
+;;	(setq company-dabbrev-downcase nil)
+;;	(setq company-selection-wrap-around t))
 
   (use-package which-key
     :ensure t
@@ -490,49 +490,71 @@
 
 
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-mode
-    :commands lsp
-    :ensure t
-    :custom
-    (lsp-enable-snippet t)
-    (lsp-keep-workspace-alive t)
-    (lsp-enable-xref t)
-    (lsp-enable-imenu t)
-    (lsp-enable-completion-at-point nil)
-    (lsp-enable-file-watchers nil)
-    (lsp-diagnostic-package :flymake)
-    (lsp-prefer-capf t)
-    (lsp-auto-guess-root t)
-    (read-process-output-max (* 1024 1024))
-    :config
-    ;; setup prog mode hook
-    (add-hook 'go-mode-hook #'lsp)
-    (add-hook 'python-mode-hook #'lsp)
-    (add-hook 'c++-mode-hook #'lsp)
-    (add-hook 'c-mode-hook #'lsp)
-    (add-hook 'rust-mode-hook #'lsp)
-    (add-hook 'html-mode-hook #'lsp)
-    (add-hook 'js-mode-hook #'lsp)
-    (add-hook 'web-mode #'lsp)
-    (add-hook 'typescript-mode-hook #'lsp)
-    (add-hook 'json-mode-hook #'lsp)
-    (add-hook 'yaml-mode-hook #'lsp)
-    (add-hook 'dockerfile-mode-hook #'lsp)
-    (add-hook 'shell-mode-hook #'lsp)
-    (add-hook 'css-mode-hook #'lsp)
+;;  (use-package lsp-mode
+;;    :commands lsp
+;;    :ensure t
+;;    :custom
+;;    (lsp-enable-snippet t)
+;;    (lsp-keep-workspace-alive t)
+;;    (lsp-enable-xref t)
+;;    (lsp-enable-imenu t)
+;;    (lsp-enable-completion-at-point nil)
+;;    (lsp-enable-file-watchers nil)
+;;    (lsp-diagnostic-package :flymake)
+;;    (lsp-prefer-capf t)
+;;    (lsp-auto-guess-root t)
+;;    (read-process-output-max (* 1024 1024))
+;;    :config
+;;    ;; setup prog mode hook
+;;    (add-hook 'go-mode-hook #'lsp)
+;;    (add-hook 'python-mode-hook #'lsp)
+;;    (add-hook 'c++-mode-hook #'lsp)
+;;    (add-hook 'c-mode-hook #'lsp)
+;;    (add-hook 'rust-mode-hook #'lsp)
+;;    (add-hook 'html-mode-hook #'lsp)
+;;    (add-hook 'js-mode-hook #'lsp)
+;;    (add-hook 'web-mode #'lsp)
+;;    (add-hook 'typescript-mode-hook #'lsp)
+;;    (add-hook 'json-mode-hook #'lsp)
+;;    (add-hook 'yaml-mode-hook #'lsp)
+;;    (add-hook 'dockerfile-mode-hook #'lsp)
+;;    (add-hook 'shell-mode-hook #'lsp)
+;;    (add-hook 'css-mode-hook #'lsp)
+;;
+;;    (setq company-minimum-prefix-length 1
+;;	  company-idle-delay 0.200)
+;;
+;;    (require 'lsp-clients)
+;;    (lsp-register-client
+;;     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+;;		      :major-modes '(go-mode)
+;;		      :server-id 'gopls))
+;;    (lsp-define-stdio-client lsp-python "python"
+;;			     #'projectile-project-root
+;;			     '("pyls"))
+;;    )
 
-    (setq company-minimum-prefix-length 1
-	  company-idle-delay 0.200)
-
-    (require 'lsp-clients)
-    (lsp-register-client
-     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-		      :major-modes '(go-mode)
-		      :server-id 'gopls))
-    (lsp-define-stdio-client lsp-python "python"
-			     #'projectile-project-root
-			     '("pyls"))
-    )
+(use-package lsp-mode
+  :commands lsp
+  :custom
+  ((lsp-enable-snippet t)
+   (lsp-enable-indentation nil)
+   (lsp-prefer-flymake nil)
+   (lsp-document-sync-method 2)
+   (lsp-inhibit-message t)
+   (lsp-message-project-root-warning t)
+   (create-lockfiles nil))
+  :init
+  (unbind-key "C-l")
+  :bind
+  (("C-l C-l"  . lsp)
+   ("C-l h"    . lsp-describe-session)
+   ("C-l t"    . lsp-goto-type-definition)
+   ("C-l r"    . lsp-rename)
+   ("C-l <f5>" . lsp-restart-workspace)
+   ("C-l l"    . lsp-lens-mode))
+  :hook
+  (prog-major-mode . lsp-prog-major-mode-enable))
 
   (use-package company-lsp
     :ensure t

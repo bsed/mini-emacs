@@ -474,86 +474,86 @@
   (helm-projectile-on))
 
 (use-package lsp-mode
-  :commands lsp
-  :ensure t
-  :custom
-  (lsp-enable-snippet t)
-  (lsp-keep-workspace-alive t)
-  (lsp-enable-xref t)
-  (lsp-enable-imenu t)
-  (lsp-enable-completion-at-point nil)
-  (lsp-enable-file-watchers nil)
-  (lsp-diagnostic-package :flymake)
-  (lsp-prefer-capf t)
-  (lsp-auto-guess-root t)
-  (read-process-output-max (* 1024 1024))
-  :config
-  ;; setup prog mode hook
-  (add-hook 'go-mode-hook #'lsp)
-  (add-hook 'python-mode-hook #'lsp)
-  (add-hook 'c++-mode-hook #'lsp)
-  (add-hook 'c-mode-hook #'lsp)
-  (add-hook 'rust-mode-hook #'lsp)
-  (add-hook 'html-mode-hook #'lsp)
-  (add-hook 'js-mode-hook #'lsp)
-  (add-hook 'web-mode #'lsp)
-  (add-hook 'typescript-mode-hook #'lsp)
-  (add-hook 'json-mode-hook #'lsp)
-  (add-hook 'yaml-mode-hook #'lsp)
-  (add-hook 'dockerfile-mode-hook #'lsp)
-  (add-hook 'shell-mode-hook #'lsp)
-  (add-hook 'css-mode-hook #'lsp)
+    :commands lsp
+    :ensure t
+    :custom
+    (lsp-enable-snippet t)
+    (lsp-keep-workspace-alive t)
+    (lsp-enable-xref t)
+    (lsp-enable-imenu t)
+    (lsp-enable-completion-at-point nil)
+    (lsp-enable-file-watchers nil)
+    (lsp-diagnostic-package :flymake)
+    (lsp-prefer-capf t)
+    (lsp-auto-guess-root t)
+    (read-process-output-max (* 1024 1024))
+    :config
+    ;; setup prog mode hook
+    (add-hook 'go-mode-hook #'lsp)
+    (add-hook 'python-mode-hook #'lsp)
+    (add-hook 'c++-mode-hook #'lsp)
+    (add-hook 'c-mode-hook #'lsp)
+    (add-hook 'rust-mode-hook #'lsp)
+    (add-hook 'html-mode-hook #'lsp)
+    (add-hook 'js-mode-hook #'lsp)
+    (add-hook 'web-mode #'lsp)
+    (add-hook 'typescript-mode-hook #'lsp)
+    (add-hook 'json-mode-hook #'lsp)
+    (add-hook 'yaml-mode-hook #'lsp)
+    (add-hook 'dockerfile-mode-hook #'lsp)
+    (add-hook 'shell-mode-hook #'lsp)
+    (add-hook 'css-mode-hook #'lsp)
 
-  (setq company-minimum-prefix-length 1
-	company-idle-delay 0.200)
+    (setq company-minimum-prefix-length 1
+	  company-idle-delay 0.200)
 
-  (require 'lsp-clients)
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-		    :major-modes '(go-mode)
-		    :server-id 'gopls))
-  (lsp-define-stdio-client lsp-python "python"
-			   #'projectile-project-root
-			   '("pyls"))
-  )
+    (require 'lsp-clients)
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+		      :major-modes '(go-mode)
+		      :server-id 'gopls))
+    (lsp-define-stdio-client lsp-python "python"
+			     #'projectile-project-root
+			     '("pyls"))
+    )
 
-(use-package company-lsp
-  :ensure t
-  :commands company-lsp
-  :config (push 'company-lsp company-backends))
+  (use-package company-lsp
+    :ensure t
+    :commands company-lsp
+    :config (push 'company-lsp company-backends))
 
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (setq lsp-ui-doc-max-height 8
-	lsp-ui-doc-max-width 35
-	lsp-ui-sideline-ignore-duplicate t
-	;; lsp-ui-doc is redundant with and more invasive than
-	;; `+lookup/documentation'
-	lsp-ui-doc-enable nil
-	;; Don't show symbol definitions in the sideline. They are pretty noisy,
-	;; and there is a bug preventing Flycheck errors from being shown (the
-	;; errors flash briefly and then disappear).
-	lsp-ui-sideline-show-hover nil)
+;;  (use-package lsp-ui
+;;    :hook (lsp-mode . lsp-ui-mode)
+;;    :config
+;;    (setq lsp-ui-doc-max-height 8
+;;	  lsp-ui-doc-max-width 35
+;;	  lsp-ui-sideline-ignore-duplicate t
+;;	  ;; lsp-ui-doc is redundant with and more invasive than
+;;	  ;; `+lookup/documentation'
+;;	  lsp-ui-doc-enable nil
+;;	  ;; Don't show symbol definitions in the sideline. They are pretty noisy,
+;;	  ;; and there is a bug preventing Flycheck errors from being shown (the
+;;	  ;; errors flash briefly and then disappear).
+;;	  lsp-ui-sideline-show-hover nil)
+;;
+;;    (set-lookup-handlers! 'lsp-ui-mode :async t
+;;	:definition 'lsp-ui-peek-find-definitions
+;;	:implementations 'lsp-ui-peek-find-implementation
+;;	:references 'lsp-ui-peek-find-references))
 
-  (set-lookup-handlers! 'lsp-ui-mode :async t
-      :definition 'lsp-ui-peek-find-definitions
-      :implementations 'lsp-ui-peek-find-implementation
-      :references 'lsp-ui-peek-find-references))
+  (use-package helm-lsp
+    :commands helm-lsp-workspace-symbol helm-lsp-global-workspace-symbol)
 
-(use-package helm-lsp
-  :commands helm-lsp-workspace-symbol helm-lsp-global-workspace-symbol)
-
-(use-package dap-mode
-  :init
-  (defun @-dap-hydra-hook ()
-    (call-interactively #'dap-hydra))
-  :config
-  (dap-mode 1)
-  (dap-ui-mode 1)
-  (dap-tooltip-mode 1)
-  (tooltip-mode 1)
-  :hook ((dap-stopped-hook . @-dap-hydra-hook)))
+  (use-package dap-mode
+    :init
+    (defun @-dap-hydra-hook ()
+      (call-interactively #'dap-hydra))
+    :config
+    (dap-mode 1)
+    (dap-ui-mode 1)
+    (dap-tooltip-mode 1)
+    (tooltip-mode 1)
+    :hook ((dap-stopped-hook . @-dap-hydra-hook)))
 
 (use-package go-mode
   :mode "\\.go\\'"

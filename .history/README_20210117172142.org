@@ -328,11 +328,21 @@
       :config
       (add-hook 'after-init-hook #'global-flycheck-mode))
 
-    (use-package yasnippet
-      :ensure t
-	  :diminish yasnippet-mode
-      :config
-      (yas-global-mode 1))
+;;    (use-package yasnippet
+;;      :ensure t
+;;	  :diminish yasnippet-mode
+;;      :config
+;;      (yas-global-mode 1))
+  (use-package yasnippet
+  :bind
+  (:map yas-minor-mode-map
+        ("C-x i n" . yas-new-snippet)
+        ("C-x i v" . yas-visit-snippet-file)
+        ("C-M-i"   . yas-insert-snippet))
+  (:map yas-keymap
+        ("<tab>" . nil)) ;; because of avoiding conflict with company keymap
+  :init
+  (yas-global-mode t))
 #+END_SRC
 
 
@@ -398,18 +408,61 @@
     (setq undo-tree-visualizer-timestamps t)
     (setq undo-tree-visualizer-diff t))
 
+;;  (use-package company
+;;    :ensure t
+;;    :diminish company-mode
+;;    :config
+;;    ;;;;(global-company-mode)
+;;    ;;(add-hook 'after-init-hook #'global-company-mode)
+;;	(add-hook 'go-mode-hook 'company-mode)
+;;    ;; Optionally enable completion-as-you-type behavior.
+;;	(setq company-idle-delay 0)
+;;	(setq company-minimum-prefix-length 1)
+;;	(setq company-dabbrev-downcase nil)
+;;	(setq company-selection-wrap-around t))
+ 
   (use-package company
-    :ensure t
-    :diminish company-mode
-    :config
-    ;;;;(global-company-mode)
-    ;;(add-hook 'after-init-hook #'global-company-mode)
-	(add-hook 'go-mode-hook 'company-mode)
-  ;; Optionally enable completion-as-you-type behavior.
-	(setq company-idle-delay 0)
-	(setq company-minimum-prefix-length 1)
-	(setq company-dabbrev-downcase nil)
-	(setq company-selection-wrap-around t))
+  :custom
+  (company-transformers '(company-sort-by-backend-importance))
+  (company-idle-delay 0)
+  (company-echo-delay 0)
+  (company-minimum-prefix-length 2)
+  (company-selection-wrap-around t)
+  (completion-ignore-case t)
+  :bind
+  (("C-M-c" . company-complete))
+  (:map company-active-map
+        ("C-n" . company-select-next)
+        ("C-p" . company-select-previous)
+        ("C-s" . company-filter-candidates)
+        ("C-i" . company-complete-selection)
+        ([tab] . company-complete-selection))
+  (:map company-search-map
+        ("C-n" . company-select-next)
+        ("C-p" . company-select-previous))
+  :init
+  (global-company-mode t)
+  :config
+  ;; lowercaseを優先にするソート
+  (defun my-sort-uppercase (candidates)
+    (let (case-fold-search
+          (re "\\`[[:upper:]]*\\'"))
+      (sort candidates
+            (lambda (s1 s2)
+              (and (string-match-p re s2)
+                   (not (string-match-p re s1)))))))
+ 
+  (push 'my-sort-uppercase company-transformers)
+ 
+  ;; yasnippetとの連携
+  (defvar company-mode/enable-yas t)
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends)))
+ 
 
   (use-package which-key
     :ensure t
@@ -490,54 +543,90 @@
 
 
 #+BEGIN_SRC emacs-lisp
-  (use-package lsp-mode
-    :commands lsp
-    :ensure t
-    :custom
-    (lsp-enable-snippet t)
-    (lsp-keep-workspace-alive t)
-    (lsp-enable-xref t)
-    (lsp-enable-imenu t)
-    (lsp-enable-completion-at-point nil)
-    (lsp-enable-file-watchers nil)
-    (lsp-diagnostic-package :flymake)
-    (lsp-prefer-capf t)
-    (lsp-auto-guess-root t)
-    (read-process-output-max (* 1024 1024))
-    :config
-    ;; setup prog mode hook
-    (add-hook 'go-mode-hook #'lsp)
-    (add-hook 'python-mode-hook #'lsp)
-    (add-hook 'c++-mode-hook #'lsp)
-    (add-hook 'c-mode-hook #'lsp)
-    (add-hook 'rust-mode-hook #'lsp)
-    (add-hook 'html-mode-hook #'lsp)
-    (add-hook 'js-mode-hook #'lsp)
-    (add-hook 'web-mode #'lsp)
-    (add-hook 'typescript-mode-hook #'lsp)
-    (add-hook 'json-mode-hook #'lsp)
-    (add-hook 'yaml-mode-hook #'lsp)
-    (add-hook 'dockerfile-mode-hook #'lsp)
-    (add-hook 'shell-mode-hook #'lsp)
-    (add-hook 'css-mode-hook #'lsp)
+;;  (use-package lsp-mode
+;;    :commands lsp
+;;    :ensure t
+;;    :custom
+;;    (lsp-enable-snippet t)
+;;    (lsp-keep-workspace-alive t)
+;;    (lsp-enable-xref t)
+;;    (lsp-enable-imenu t)
+;;    (lsp-enable-completion-at-point nil)
+;;    (lsp-enable-file-watchers nil)
+;;    (lsp-diagnostic-package :flymake)
+;;    (lsp-prefer-capf t)
+;;    (lsp-auto-guess-root t)
+;;    (read-process-output-max (* 1024 1024))
+;;    :config
+;;    ;; setup prog mode hook
+;;    (add-hook 'go-mode-hook #'lsp)
+;;    (add-hook 'python-mode-hook #'lsp)
+;;    (add-hook 'c++-mode-hook #'lsp)
+;;    (add-hook 'c-mode-hook #'lsp)
+;;    (add-hook 'rust-mode-hook #'lsp)
+;;    (add-hook 'html-mode-hook #'lsp)
+;;    (add-hook 'js-mode-hook #'lsp)
+;;    (add-hook 'web-mode #'lsp)
+;;    (add-hook 'typescript-mode-hook #'lsp)
+;;    (add-hook 'json-mode-hook #'lsp)
+;;    (add-hook 'yaml-mode-hook #'lsp)
+;;    (add-hook 'dockerfile-mode-hook #'lsp)
+;;    (add-hook 'shell-mode-hook #'lsp)
+;;    (add-hook 'css-mode-hook #'lsp)
+;;
+;;    (setq company-minimum-prefix-length 1
+;;	  company-idle-delay 0.200)
+;;
+;;    (require 'lsp-clients)
+;;    (lsp-register-client
+;;     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+;;		      :major-modes '(go-mode)
+;;		      :server-id 'gopls))
+;;    (lsp-define-stdio-client lsp-python "python"
+;;			     #'projectile-project-root
+;;			     '("pyls"))
+;;    )
 
-    (setq company-minimum-prefix-length 1
-	  company-idle-delay 0.200)
+(use-package lsp-mode
+  :commands lsp
+  :custom
+  ((lsp-enable-snippet t)
+   (lsp-enable-indentation nil)
+   (lsp-prefer-capf t)
+   (lsp-prefer-flymake nil)
+   (lsp-document-sync-method 2)
+   (lsp-inhibit-message t)
+   (lsp-message-project-root-warning t)
+   (create-lockfiles nil))
+  :init
+  (unbind-key "C-l")
+  :bind
+  (("C-l C-l"  . lsp)
+   ("C-l h"    . lsp-describe-session)
+   ("C-l t"    . lsp-goto-type-definition)
+   ("C-l r"    . lsp-rename)
+   ("C-l <f5>" . lsp-restart-workspace)
+   ("C-l l"    . lsp-lens-mode))
+  :hook
+  (prog-major-mode . lsp-prog-major-mode-enable))
 
-    (require 'lsp-clients)
-    (lsp-register-client
-     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-		      :major-modes '(go-mode)
-		      :server-id 'gopls))
-    (lsp-define-stdio-client lsp-python "python"
-			     #'projectile-project-root
-			     '("pyls"))
-    )
+;;  (use-package company-lsp
+;;    :ensure t
+;;    :commands company-lsp
+;;    :config (push 'company-lsp company-backends))
 
-  (use-package company-lsp
-    :ensure t
-    :commands company-lsp
-    :config (push 'company-lsp company-backends))
+(use-package company-lsp
+  :commands company-lsp
+  :custom
+  (company-lsp-cache-candidates nil)
+  (company-lsp-async t)
+  (company-lsp-enable-recompletion t)
+  (company-lsp-enable-snippet t)
+  :after
+  (:all lsp-mode lsp-ui company yasnippet)
+  :init
+  (push 'company-lsp company-backends))
+
 
 ;;  (use-package lsp-ui
 ;;    :hook (lsp-mode . lsp-ui-mode)
@@ -660,9 +749,13 @@
 #+BEGIN_SRC emacs-lisp
   (use-package ccls
     :ensure t
-    :config
-    (setq ccls-executable "ccls")
-    (setq lsp-prefer-flymake nil)
+	:custom
+	(ccls-executable "/usr/local/bin/ccls")
+	(ccls-sem-highlight-method 'font-lock)
+	(ccls-use-default-rainbow-sem-highlight)
+    ;;:config
+    ;;(setq ccls-executable "ccls")
+    ;;(setq lsp-prefer-flymake nil)
     (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-cppcheck c/c++-gcc))
     :hook ((c-mode c++-mode objc-mode) .
         (lambda () (require 'ccls) (lsp))))
