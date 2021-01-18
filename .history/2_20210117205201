@@ -1,0 +1,15 @@
+(with-eval-after-load 'company
+  (diminish 'company-mode))
+(with-eval-after-load 'magit
+  (diminish 'magit-mode))
+(with-eval-after-load 'git-gutter+
+  (diminish 'git-gutter+-mode))
+;;(with-eval-after-load 'smartparens
+;;  (diminish 'smartparens-mode))
+(with-eval-after-load 'expand-region
+  (diminish 'expand-region-mode))
+(with-eval-after-load 'expand-region
+  (diminish 'expand-region-mode))
+
+(with-eval-after-load 'avy
+  (diminish 'avy-mode))

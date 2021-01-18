@@ -1,9 +1,11 @@
-(setq user-full-name "SfZ"
+(setq user-full-name "kelvin"
     user-mail-address "shaeufung.zhao@gmail.com")
 
   (setq gc-cons-threshold 100000000)
   (setq large-file-warning-threshold 200000000)
 
+      ;; Always load newest byte code
+      (setq load-prefer-newer t)
       ;; (require 'cl) を見逃す
  (setq byte-compile-warnings '(not cl-functions obsolete))
 
@@ -58,8 +60,37 @@
       ;; Keep auto-save/backup files separate from source code:  https://github.com/scalameta/metals/issues/1027
     (setq use-package-always-defer t
       use-package-always-ensure t
-      backup-directory-alist `((".*" . ,temporary-file-directory))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+      ;;backup-directory-alist `((".*" . ,temporary-file-directory))
+      ;;auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+	)
+    ;; Version control
+      (defvar backup-directory "~/emacs-backup")
+      (if (not (file-exists-p backup-directory))
+	      (make-directory backup-directory t))
+      (setq
+	      make-backup-files t
+	      ;; Set the backup directory path.
+	      backup-directory-alist `((".*" . ,backup-directory)) ;; save backup files in ~/.backups
+	      ;; Copy all files, don't rename them.
+	      backup-by-copying t
+	      ;; Use version numbers for backups.
+	      version-control t
+	      ;; Don't ask to delete excess backup versions.
+	      delete-old-versions  t
+	      ;; Number of oldest versions to keep.
+	      kept-old-versions 6
+	      ;; Number of newest versions to keep.
+	      kept-new-versions 9
+	      auto-save-default t
+	      auto-save-timeout 20
+	      auto-save-interval 200
+	      vc-make-backup-files t
+	      auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+	       ;;Backups
+      ;;(setq backup-directory-alist
+      ;;  `((".*" . ,temporary-file-directory)))
+      ;;(setq auto-save-file-name-transforms
+      ;;  `((".*" ,temporary-file-directory t)))
     ))
 
 (defun @-setup-macos-hack ()
@@ -95,9 +126,7 @@
       ;;(global-auto-revert-mode t)
 
       ;;(toggle-frame-fullscreen)
-      (menu-bar-mode -1)
       (toggle-scroll-bar -1)
-      (tool-bar-mode -1)
       (blink-cursor-mode -1)
 
 	      ;;(global-hl-line-mode nil)
@@ -107,8 +136,18 @@
       ;;(column-number-mode t)
       (size-indication-mode t)
 
+	      (setq inhibit-startup-message t)
+	      (tool-bar-mode -1)
+	      (set-window-fringes nil 0 0)
+	      (menu-bar-mode -1)		
+	      (scroll-bar-mode -1)
+	      ;;
+	      (setq org-src-fontify-natively t)
+	      ;;(show-paren-mode)
       ;;Ease of life
       (fset 'yes-or-no-p 'y-or-n-p) ; Accept 'y' in lieu of 'yes'.
+      (fset 'jdent
+              [return return ?\C-p tab])
 
 	      ;; No need to see GNU agitprop.
       ;;(setq inhibit-startup-screen nil)
@@ -118,21 +157,6 @@
       scroll-conservatively 1000
       show-paren-delay 0)
 
-	      ;; Version control
-	      (setq
-	      ;; Use version numbers for backups.
-	      version-control t
-	      vc-make-backup-files t
-	      ;; Copy all files, don't rename them.
-	      backup-by-copying t
-	      ;; Set the backup directory path.
-	      backup-directory-alist '(("" . "~/emacs-backup"))
-	      ;; Don't ask to delete excess backup versions.
-	      delete-old-versions t
-	      ;; Number of newest versions to keep.
-	      kept-new-versions 10
-	      ;; Number of oldest versions to keep.
-	      kept-old-versions 0)
 
 
       (setq tab-width 4
@@ -151,9 +175,6 @@
         kill-whole-line t
         ;; search should be case-sensitive by default
         case-fold-search nil
-
-      make-backup-files nil
-      auto-save-default nil
       create-lockfiles nil)
 
       ;; Never mix tabs and spaces. Never use tabs, period.
@@ -171,22 +192,9 @@
           scroll-preserve-screen-position 1)
       (set-frame-font "Hack 12" nil t)
 
-      ;;Backups
-      (setq backup-directory-alist
-        `((".*" . ,temporary-file-directory)))
-      (setq auto-save-file-name-transforms
-        `((".*" ,temporary-file-directory t)))
+
 
       (global-auto-revert-mode t)
-      (prefer-coding-system 'utf-8)
-      (set-default-coding-systems 'utf-8)
-      (set-terminal-coding-system 'utf-8)
-      (set-keyboard-coding-system 'utf-8)
-
-	      (set-charset-priority 'unicode)
-      (setq locale-coding-system 'utf-8)
-      (set-selection-coding-system 'utf-8)
-      (setq default-process-coding-system '(utf-8-unix . utf-8-unix))
 
       (setq-default tab-width 4
                   indent-tabs-mode nil)
@@ -207,15 +215,28 @@
 (defun @-setup-vendor-package ()
   (progn
     (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor"))
-
+	(require 'gcmh)
     ;; gc magic hack
-    (require 'gcmh)))
+    (require 'lang-js)))
 
 (@-setup-vendor-package)
 (@-setup-package-repos)
 (@-setup-package-installer)
 (@-setup-macos-hack)
 (@-setup-global-mode)
+
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+
+(set-charset-priority 'unicode)
+(set-selection-coding-system 'utf-8)
+(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+(setq locale-coding-system 'utf-8)
+
+;;(setq make-backup-files nil)
+;;(setq auto-save-default t)
 
 (defun @-setup-editor-theme ()
  (progn
@@ -269,8 +290,81 @@
 (@-setup-editor-theme)
 (@-setup-editor-face)
 
+;; Notes in *scratch* v. 0.2
+   ;; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
+   ;; Released under GNU GPL
+
+   (defconst scratch-file (expand-file-name "~/.emacs.d/scratch")
+     "File where content of *scratch* buffer will be read from and saved to.")
+   (defconst scratch-file-autosave (concat scratch-file ".autosave")
+     "File where to autosave content of *scratch* buffer.")
+
+   (save-excursion
+     (set-buffer (get-buffer-create "*scratch*"))
+     (if (file-readable-p scratch-file)
+         (if (and (file-readable-p scratch-file-autosave)
+                  (file-newer-than-file-p scratch-file-autosave scratch-file)t)
+             (insert-file-contents scratch-file-autosave nil nil nil t)
+           (insert-file-contents scratch-file nil nil nil t)
+           (set-buffer-modified-p nil)))
+     (auto-save-mode 1)
+     (setq buffer-auto-save-file-name scratch-file-autosave)
+                                           ; (setq revert-buffer-function 'scratch-revert)
+     (fundamental-mode))
+   (add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
+   (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
+
+   (defun scratch-revert (ignore-auto noconfirm)
+     (when (file-readable-p scratch-file)
+       (insert-file-contents scratch-file nil nil nil t)
+       (set-buffer-modified-p nil)))
+
+   (defun kill-scratch-buffer ()
+     (not (when (string-equal (buffer-name (current-buffer)) "*scratch*")
+            (delete-region (point-min) (point-max))
+            (set-buffer-modified-p nil)
+            (next-buffer)
+            t)))
+
+   (defun kill-emacs-scratch-save ()
+     (let ((buffer (get-buffer-create "*scratch*")))
+       (if buffer
+           (save-excursion
+             (set-buffer buffer)
+             (write-region nil nil scratch-file)
+             (unless (string-equal scratch-file buffer-auto-save-file-name)
+               (delete-auto-save-file-if-necessary t))))))
+
+;; Update packages
+(use-package auto-package-update
+   :ensure t
+   :init
+   (setq auto-package-update-delete-old-versions t
+         auto-package-update-interval 4)
+   (auto-package-update-maybe))
+
 (use-package diminish
-  :ensure t)
+  :ensure t
+      :config
+    (with-eval-after-load 'company
+      (diminish 'company-mode))
+    (with-eval-after-load 'magit
+      (diminish 'magit-mode))
+    (with-eval-after-load 'git-gutter+
+      (diminish 'git-gutter+-mode))
+    ;;(with-eval-after-load 'smartparens
+    ;;  (diminish 'smartparens-mode))
+    (with-eval-after-load 'expand-region
+      (diminish 'expand-region-mode))
+    (with-eval-after-load 'flycheck
+      (diminish 'flycheck-mode))
+    (with-eval-after-load 'avy
+      (diminish 'avy-mode))
+    (with-eval-after-load 'rainbow
+  (diminish 'rainbow-mode))
+    (with-eval-after-load 'yasnippet
+  (diminish 'yasnippet-mode))
+    )
       ;;:config (diminish 'eldoc-mode))
 
     (use-package gnu-elpa-keyring-update)
@@ -286,7 +380,6 @@
 
 (use-package smartparens
   :ensure t
-  :diminish smartparens-mode
   :config
   (progn
   (require 'smartparens-config)
@@ -295,31 +388,54 @@
 
 (use-package expand-region
   :ensure t
-  :diminish expand-region-mode
       :config
   :bind ("M-m" . er/expand-region))
 
 (use-package avy
   :ensure t
-  :diminish avy-mode
   :bind
-  ("C-=" . avy-goto-char)
+  ("C-=" . avy-goto-char-2)
   :config
   (setq avy-background t))
 
 (use-package crux
   :ensure t
-  :diminish crux-mode
       :config
-  :bind
-  ("C-k" . crux-smart-kill-line)
-  ("C-c n" . crux-cleanup-buffer-or-region)
-  ("C-c f" . crux-recentf-find-file)
-  ("C-a" . crux-move-beginning-of-line))
+  ;;:bind
+  ;;("C-k" . crux-smart-kill-line)
+  ;;("C-c n" . crux-cleanup-buffer-or-region)
+  ;;("C-c f" . crux-recentf-find-file)
+  ;;("C-a" . crux-move-beginning-of-line)
+      :bind (("C-c o" . crux-open-with)
+		    ("M-o" . crux-smart-open-line)
+		    ("C-c n" . crux-cleanup-buffer-or-region)
+		    ("C-c f" . crux-recentf-find-file)
+		    ("C-M-z" . crux-indent-defun)
+		    ("C-c u" . crux-view-url)
+		    ("C-c e" . crux-eval-and-replace)
+		    ("C-c w" . crux-swap-windows)
+		    ("C-c D" . crux-delete-file-and-buffer)
+		    ("C-c r" . crux-rename-buffer-and-file)
+		    ("C-c t" . crux-visit-term-buffer)
+		    ("C-c k" . crux-kill-other-buffers)
+		    ("C-c TAB" . crux-indent-rigidly-and-copy-to-clipboard)
+		    ("C-c I" . crux-find-user-init-file)
+		    ("C-c S" . crux-find-shell-init-file)
+		    ("s-r" . crux-recentf-find-file)
+		    ("s-j" . crux-top-join-line)
+		    ("C-^" . crux-top-join-line)
+		    ("s-k" . crux-kill-whole-line)
+		    ("C-<backspace>" . crux-kill-line-backwards)
+		    ("s-o" . crux-smart-open-line-above)
+		    ([remap move-beginning-of-line] . crux-move-beginning-of-line)
+		    ([(shift return)] . crux-smart-open-line)
+		    ([(control shift return)] . crux-smart-open-line-above)
+		    ([remap kill-whole-line] . crux-kill-whole-line)
+		    ("C-c s" . crux-ispell-word-then-abbrev))
+    )
 
 (use-package flycheck
   :ensure t
-  :diminish flycheck-mode
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
@@ -327,29 +443,61 @@
   :ensure t
       :diminish yasnippet-mode
   :config
-  (yas-global-mode 1))
+  (yas-global-mode 1)
+      (add-hook 'term-mode-hook (lambda()
+      (setq yas-dont-activate t)))
+    )
 
-(use-package helm-swoop)
+(use-package helm-swoop
+  :ensure t
+  :after helm)
+
 (use-package helm
   :ensure t
   :defer 2
   :bind
+      ;; First using helm for M-x so we get a live filter
+  ;; of options, and don't need to keep tab completing.
   ("M-x" . helm-M-x)
+      ;; Also use helm for buffers. I can never remember the
+  ;; buffers I have open.
+  ("C-x C-b" . helm-buffers-list)
+      ;; Finding files can also be a pain, so use helm
+  ;; to locate and open files
   ("C-x C-f" . helm-find-files)
   ("M-y" . helm-show-kill-ring)
-  ("C-x b" . helm-mini)
+  ;;("C-x b" . helm-mini)
   :config
   (require 'helm-config)
   (helm-mode 1)
   (setq helm-split-window-inside-p t
-  helm-move-to-line-cycle-in-source t)
+    helm-move-to-line-cycle-in-source t)
   (setq helm-autoresize-max-height 0)
   (setq helm-autoresize-min-height 20)
-  (helm-autoresize-mode 1)
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+      (setq helm-boring-buffer-regexp-list (list
+                                      (rx "*magit-")
+                                      (rx "*magit: ")
+                                      (rx "magit-")
+                                      (rx "magit: ")
+                                      (rx "*helm ")
+                                      (rx "*Minibuf-")
+                                      (rx "*Echo Area")
 
+                                      (rx "*Backtrace*")
+                                      (rx "*code-converting-work*")
+                                      (rx "*code-conversion-work*")
+                                      (rx "*elpy")
+                                      (rx "*Compile-Log*")
+                                      (rx "*Completions*")
+                                      (rx "*groovy*")
+                                      (rx "*Help*")
+                                      (rx "*Messages*")
+                                      (rx "*NeoTree*")
+                                      (rx "*scratch*")
+                                      (rx "*server*")
+                                      (rx "*Shell Command Output*")
+                                      ))
+  (helm-autoresize-mode 1)
   ;;:bind
   ;;(("C-c s" . helm-swoop)
    ;;("C-x C-f" . helm-find-files)
@@ -380,26 +528,40 @@
 (use-package undo-tree
   :ensure t
   :config
-  (global-undo-tree-mode)
+      ;; autosave the undo-tree history
+      (setq undo-tree-history-directory-alist
+      `((".*" . ,temporary-file-directory)))
+      (setq undo-tree-auto-save-history t)
+      (global-undo-tree-mode +1)
+  ;;(global-undo-tree-mode)
   (setq undo-tree-visualizer-timestamps t)
-  (setq undo-tree-visualizer-diff t))
+  (setq undo-tree-visualizer-diff t)
+      )
 
 (use-package company
   :ensure t
-  :diminish company-mode
+      :defer 2
   :config
-  ;;;;(global-company-mode)
-  ;;(add-hook 'after-init-hook #'global-company-mode)
+  ;;(global-company-mode)
+  (add-hook 'after-init-hook #'global-company-mode)
       (add-hook 'go-mode-hook 'company-mode)
-;; Optionally enable completion-as-you-type behavior.
+  ;; Optionally enable completion-as-you-type behavior.
       (setq company-idle-delay 0)
-      (setq company-minimum-prefix-length 1)
+      (setq company-minimum-prefix-length 4)
       (setq company-dabbrev-downcase nil)
       (setq company-selection-wrap-around t))
 
+  (with-eval-after-load 'company
+     (define-key company-active-map (kbd "SPC") #'company-abort)
+     (define-key company-active-map (kbd "M-n") nil)
+     (define-key company-active-map (kbd "M-p") nil)
+     (define-key company-active-map (kbd "C-n") #'company-select-next)
+     (define-key company-active-map (kbd "C-p") #'company-select-previous)
+     )
+   (add-hook 'after-init-hook 'global-company-mode)
+
 (use-package which-key
   :ensure t
-  :diminish which-key-mode
   :config
   ;;(which-key-mode)
   (which-key-mode +1)
@@ -429,20 +591,25 @@
   :custom
   (neo-theme 'nerd2)
   :config
+      (require 'neotree)
   (setq neo-smart-open t)
   (setq neo-theme (if (display-graphic-p) 'icons 'nerd))
-  (setq neo-window-fixed-size nil)
   (setq-default neo-show-hidden-files nil)
+      (setq neo-show-hidden-files t)
+  (setq neo-window-fixed-size nil)
+  (setq neo-window-width 35)
+  ;; (setq neo-autorefresh t) ;; setting to t will cause neotree to change root after opening a file
+  (setq neo-force-change-root t)
   (global-set-key [f2] 'neotree-toggle)
-  (global-set-key [f8] 'neotree-dir))
+  (global-set-key [f8] 'neotree-dir)
+      (add-hook 'after-init-hook #'neotree-toggle)
+)
 
 (use-package magit
   :ensure t
-  :diminish magit-mode
   :bind (("C-M-g" . magit-status)))
 (use-package git-gutter+
   :ensure t
-  :diminish git-gutter+
   :config
   (global-git-gutter+-mode))
 
@@ -460,100 +627,129 @@
 
 (use-package projectile
   :ensure t
-  :diminish projectile-mode
+      ;;:diminish (projectile-mode . "Ⓟ")
   :bind
   (("C-c p f" . helm-projectile-find-file)
    ("C-c p p" . helm-projectile-switch-project)
    ("C-c p s" . projectile-save-project-buffers))
+  ;;:init
+      ;;(setq projectile-keymap-prefix (kbd "C-c p")
+  ;;    projectile-require-project-root nil)
   :config
   (projectile-mode +1)
+      ;;(projectile-global-mode)
 )
+;; helm-projectile-switch-project
+;; workaround for laggy projectile, more info: https://github.com/bbatsov/projectile/issues/1183
+(setq projectile-mode-line
+       '(:eval (format " Projectile[%s]"
+                      (projectile-project-name))))
+
 (use-package helm-projectile
   :ensure t
+      :after (helm projectile)
+      :init
+  (setq projectile-completion-system 'helm)
   :config
   (helm-projectile-on))
+      (use-package helm-projectile
+      :ensure t
+      :after (helm projectile)
+      :init
+      (setq projectile-completion-system 'helm)
+      :config
+      (helm-projectile-on))
+
+      (use-package projectile-ripgrep
+      :ensure t
+      :commands projectile-ripgrep)
+
+      (use-package helm-rg
+      :ensure t
+      :defer t
+      :after helm)
 
 (use-package lsp-mode
-    :commands lsp
-    :ensure t
-    :custom
-    (lsp-enable-snippet t)
-    (lsp-keep-workspace-alive t)
-    (lsp-enable-xref t)
-    (lsp-enable-imenu t)
-    (lsp-enable-completion-at-point nil)
-    (lsp-enable-file-watchers nil)
-    (lsp-diagnostic-package :flymake)
-    (lsp-prefer-capf t)
-    (lsp-auto-guess-root t)
-    (read-process-output-max (* 1024 1024))
-    :config
-    ;; setup prog mode hook
-    (add-hook 'go-mode-hook #'lsp)
-    (add-hook 'python-mode-hook #'lsp)
-    (add-hook 'c++-mode-hook #'lsp)
-    (add-hook 'c-mode-hook #'lsp)
-    (add-hook 'rust-mode-hook #'lsp)
-    (add-hook 'html-mode-hook #'lsp)
-    (add-hook 'js-mode-hook #'lsp)
-    (add-hook 'web-mode #'lsp)
-    (add-hook 'typescript-mode-hook #'lsp)
-    (add-hook 'json-mode-hook #'lsp)
-    (add-hook 'yaml-mode-hook #'lsp)
-    (add-hook 'dockerfile-mode-hook #'lsp)
-    (add-hook 'shell-mode-hook #'lsp)
-    (add-hook 'css-mode-hook #'lsp)
+  :commands lsp
+  :ensure t
+  :custom
+  (lsp-enable-snippet t)
+  (lsp-keep-workspace-alive t)
+  (lsp-enable-xref t)
+  (lsp-enable-imenu t)
+  (lsp-enable-completion-at-point nil)
+  (lsp-enable-file-watchers nil)
+  (lsp-diagnostic-package :flymake)
+  (lsp-prefer-capf t)
+  (lsp-auto-guess-root t)
+  (read-process-output-max (* 1024 1024))
+  :config
+  ;; setup prog mode hook
+  (add-hook 'go-mode-hook #'lsp)
+  (add-hook 'python-mode-hook #'lsp)
+  (add-hook 'c++-mode-hook #'lsp)
+  (add-hook 'c-mode-hook #'lsp)
+  (add-hook 'rust-mode-hook #'lsp)
+  (add-hook 'html-mode-hook #'lsp)
+  (add-hook 'js-mode-hook #'lsp)
+  (add-hook 'web-mode #'lsp)
+  (add-hook 'typescript-mode-hook #'lsp)
+  (add-hook 'json-mode-hook #'lsp)
+  (add-hook 'yaml-mode-hook #'lsp)
+  (add-hook 'dockerfile-mode-hook #'lsp)
+  (add-hook 'shell-mode-hook #'lsp)
+  (add-hook 'css-mode-hook #'lsp)
 
-    (setq company-minimum-prefix-length 1
-	  company-idle-delay 0.200)
+  (setq company-minimum-prefix-length 1
+	company-idle-delay 0.200)
 
-    (require 'lsp-clients)
-    (lsp-register-client
-     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-		      :major-modes '(go-mode)
-		      :server-id 'gopls))
-    (lsp-define-stdio-client lsp-python "python"
-			     #'projectile-project-root
-			     '("pyls"))
-    )
+  (require 'lsp-clients)
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+		    :major-modes '(go-mode)
+		    :server-id 'gopls))
+  (lsp-define-stdio-client lsp-python "python"
+			   #'projectile-project-root
+			   '("pyls"))
+  )
 
-  (use-package company-lsp
-    :ensure t
-    :commands company-lsp
-    :config (push 'company-lsp company-backends))
+(use-package company-lsp
+  :ensure t
+  :commands company-lsp
+  :config (push 'company-lsp company-backends))
 
-;;  (use-package lsp-ui
-;;    :hook (lsp-mode . lsp-ui-mode)
-;;    :config
-;;    (setq lsp-ui-doc-max-height 8
-;;	  lsp-ui-doc-max-width 35
-;;	  lsp-ui-sideline-ignore-duplicate t
-;;	  ;; lsp-ui-doc is redundant with and more invasive than
-;;	  ;; `+lookup/documentation'
-;;	  lsp-ui-doc-enable nil
-;;	  ;; Don't show symbol definitions in the sideline. They are pretty noisy,
-;;	  ;; and there is a bug preventing Flycheck errors from being shown (the
-;;	  ;; errors flash briefly and then disappear).
-;;	  lsp-ui-sideline-show-hover nil)
-;;
-;;    (set-lookup-handlers! 'lsp-ui-mode :async t
-;;	:definition 'lsp-ui-peek-find-definitions
-;;	:implementations 'lsp-ui-peek-find-implementation
-;;	:references 'lsp-ui-peek-find-references))
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-doc-max-height 8
+	lsp-ui-doc-max-width 35
+	lsp-ui-sideline-ignore-duplicate t
+	;; lsp-ui-doc is redundant with and more invasive than
+	;; `+lookup/documentation'
+	lsp-ui-doc-enable nil
+	;; Don't show symbol definitions in the sideline. They are pretty noisy,
+	;; and there is a bug preventing Flycheck errors from being shown (the
+	;; errors flash briefly and then disappear).
+	lsp-ui-sideline-show-hover nil)
 
-  (use-package helm-lsp
-    :commands helm-lsp-workspace-symbol helm-lsp-global-workspace-symbol)
+  (set-lookup-handlers! 'lsp-ui-mode :async t
+      :definition 'lsp-ui-peek-find-definitions
+      :implementations 'lsp-ui-peek-find-implementation
+      :references 'lsp-ui-peek-find-references))
 
-  (use-package dap-mode
-    :init
-    (defun @-dap-hydra-hook ()
-      (call-interactively #'dap-hydra))
-    :config
-    (dap-mode 1)
-    (dap-ui-mode 1)
-    (dap-tooltip-mode 1)
-    (tooltip-mode 1)
-    :hook ((dap-stopped-hook . @-dap-hydra-hook)))
+(use-package helm-lsp
+  :commands helm-lsp-workspace-symbol helm-lsp-global-workspace-symbol)
+
+(use-package dap-mode
+  :init
+  (defun @-dap-hydra-hook ()
+    (call-interactively #'dap-hydra))
+  :config
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1)
+  :hook ((dap-stopped-hook . @-dap-hydra-hook)))
 
 (use-package go-mode
   :mode "\\.go\\'"
@@ -750,3 +946,7 @@
 (global-set-key (kbd "M-9") 'previous-multiframe-window)
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (global-set-key "\C-h" 'delete-backward-char)
+(global-set-key (kbd "M-g f") 'avy-goto-line)
+(global-set-key (kbd "C-j") nil)
+(global-set-key (kbd "C-j") 'jdent)
+;;(global-set-key [f8] 'menu-bar-mode)
