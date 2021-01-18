@@ -741,6 +741,8 @@
 		(read-process-output-max (* 1024 1024))
 		;; Python
 		(lsp-pyls-configuration-sources ["flake8"])
+		  ;; go-client
+  		(lsp-clients-go-server-args '("--cache-style=always" "--diagnostics-style=onsave" "--format-style=goimports"))
 	)
 	:hook  ((lsp-mode . lsp-enable-which-key-integration)
 		  (c++-mode . lsp-deferred)
@@ -766,15 +768,15 @@
 	
     :config
 	(progn
-    (require 'lsp-clients)
-    (setq lsp-message-project-root-warning t
-	    lsp-prefer-flymake nil
-	    lsp-restart 'ignore
-	    lsp-eldoc-hook nil
-	    lsp-eldoc-enable-hover nil
-	    lsp-auto-configure nil
-	    lsp-enable-symbol-highlighting nil)
-
+		(require 'lsp-clients)
+		(setq lsp-message-project-root-warning t
+			lsp-prefer-flymake nil
+			lsp-restart 'ignore
+			lsp-eldoc-hook nil
+			lsp-eldoc-enable-hover nil
+			lsp-auto-configure nil
+			lsp-enable-symbol-highlighting nil)
+	)
 	(dolist (m '(clojure-mode
                clojurec-mode
                clojurescript-mode
@@ -791,6 +793,16 @@
 	;;		     #'projectile-project-root
 	;;		     '("pyls"))
 	
+	;;(lsp-register-client
+    ;;(make-lsp-client :new-connection (lsp-stdio-connection
+    ;;                                 (lambda () (cons "bingo"
+    ;;                                                  lsp-clients-go-server-args)))
+                    :major-modes '(go-mode)
+                    :priority 2
+                    :initialization-options 'lsp-clients-go--make-init-options
+                    :server-id 'go-bingo
+                    :library-folders-fn (lambda (_workspace)
+					  lsp-clients-go-library-directories)))
   )
 
   (use-package company-lsp
@@ -812,12 +824,12 @@
 	(lsp-ui-doc-header t)
 	(lsp-ui-doc-include-signature t)
 	(lsp-ui-sideline-enable nil)
-	(lsp-ui-doc-position 'top)
-	(lsp-ui-doc-max-width  60)
-	(lsp-ui-doc-max-height 20)
+	;;(lsp-ui-doc-position 'top)
+	(lsp-ui-doc-position 'at-point)	; top, bottom, or at-point
+	(lsp-ui-doc-max-width  120)
+	(lsp-ui-doc-max-height 30)
 	(lsp-ui-doc-use-childframe t)
 	(lsp-ui-doc-use-webkit nil)
-	
 	;; lsp-ui-flycheck
 	(lsp-ui-flycheck-enable t)
 	(lsp-ui-flycheck-list-position 'right)
@@ -830,11 +842,9 @@
 	(lsp-ui-sideline-show-diagnostics t)
 	(lsp-ui-sideline-show-code-actions t)
 	(lsp-ui-sideline-code-actions-prefix "")
-
 	;; lsp-ui-imenu
 	(lsp-ui-imenu-enable nil)
 	(lsp-ui-imenu-kind-position 'top)
-	
 	;; lsp-ui-peek
 	(lsp-ui-peek-enable t)
 	(lsp-ui-peek-always-show t)
@@ -842,7 +852,7 @@
 	(lsp-ui-peek-list-width 60)
 	;;(lsp-ui-peek-fontify 'always)
 	(lsp-ui-peek-fontify 'on-demand)	; never, on-demand, or always
-	:preface
+	 :preface
     (defun ladicle/toggle-lsp-ui-doc ()
       (interactive)
       (if lsp-ui-doc-mode

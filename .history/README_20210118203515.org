@@ -719,7 +719,7 @@
 		(lsp-trace nil)
 		(lsp-print-performance t)
 		(lsp-response-timeout 20)
-		;;(lsp-prefer-flymake t)	   ; t(flymake), nil(lsp-ui), or :none
+		(lsp-prefer-flymake t)	   ; t(flymake), nil(lsp-ui), or :none
 		(lsp-signature-auto-activate nil)
 		(lsp-signature-render-documentation nil)
 		(lsp-enable-snippet t)
@@ -829,8 +829,7 @@
 	(lsp-ui-sideline-show-hover t)
 	(lsp-ui-sideline-show-diagnostics t)
 	(lsp-ui-sideline-show-code-actions t)
-	(lsp-ui-sideline-code-actions-prefix "")
-
+	
 	;; lsp-ui-imenu
 	(lsp-ui-imenu-enable nil)
 	(lsp-ui-imenu-kind-position 'top)
@@ -840,24 +839,7 @@
 	(lsp-ui-peek-always-show t)
 	(lsp-ui-peek-peek-height 25)
 	(lsp-ui-peek-list-width 60)
-	;;(lsp-ui-peek-fontify 'always)
-	(lsp-ui-peek-fontify 'on-demand)	; never, on-demand, or always
-	:preface
-    (defun ladicle/toggle-lsp-ui-doc ()
-      (interactive)
-      (if lsp-ui-doc-mode
-          (progn
-            (lsp-ui-doc-mode -1)
-            (lsp-ui-doc--hide-frame))
-        (lsp-ui-doc-mode 1)))
-    :bind
-    (:map lsp-mode-map
-	  ("C-c C-r" . lsp-ui-peek-find-references)
-	  ("C-c C-j" . lsp-ui-peek-find-definitions)
-	  ("C-c i"   . lsp-ui-peek-find-implementation)
-	  ("C-c m"   . lsp-ui-imenu)
-	  ("C-c s"   . lsp-ui-sideline-mode)
-	  ("C-c d"   . ladicle/toggle-lsp-ui-doc))
+	(lsp-ui-peek-fontify 'always)
 	:hook
 	(lsp-mode . lsp-ui-mode)
   )

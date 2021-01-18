@@ -575,9 +575,7 @@
 	(add-hook 'go-mode-hook 'company-mode)
     ;; Optionally enable completion-as-you-type behavior.
 	(setq company-idle-delay 0)
-	;;(setq company-minimum-prefix-length 4)
-	(setq company-minimum-prefix-length 1
-	  company-idle-delay 0.200)
+	(setq company-minimum-prefix-length 4)
 	(setq company-dabbrev-downcase nil)
 	(setq company-selection-wrap-around t))
 
@@ -703,164 +701,88 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
-    ;;:requires hydra helm helm-lsp
-	:requires hydra helm helm-lsp
     :commands (lsp lsp-deferred)
     :ensure t
     :custom
-	(
-		;; try to disable automatic-doc-help in echo erea
-		;; when it is enabled, lsp will send requests to lsp-server
-		;; when cursor is moved, which may block the editor
-		;; https://github.com/emacs-lsp/lsp-mode/issues/1223
-		(lsp-log-io nil)
-		;; debug
-		(lsp-print-io nil)
-		(lsp-trace nil)
-		(lsp-print-performance t)
-		(lsp-response-timeout 20)
-		;;(lsp-prefer-flymake t)	   ; t(flymake), nil(lsp-ui), or :none
-		(lsp-signature-auto-activate nil)
-		(lsp-signature-render-documentation nil)
-		(lsp-enable-snippet t)
-		(lsp-enable-indentation nil)
-		(lsp-keep-workspace-alive t)
-		(lsp-enable-xref t)
-		(lsp-enable-imenu t)
-		(lsp-enable-completion-at-point nil)
-		(lsp-enable-file-watchers nil)
-		(lsp-diagnostic-package :flymake)
-		(lsp-prefer-capf t)
-		(lsp-auto-guess-root t)
-		;;(lsp-document-sync-method 2)
-		(lsp-document-sync-method 'incremental) ; none, full, incremental, or nil
-		(lsp-inhibit-message t)
-		(lsp-message-project-root-warning t)
-		;;(create-lockfiles nil)
-
-		(read-process-output-max (* 1024 1024))
-		;; Python
-		(lsp-pyls-configuration-sources ["flake8"])
-	)
-	:hook  ((lsp-mode . lsp-enable-which-key-integration)
-		  (c++-mode . lsp-deferred)
-	      (c-mode . lsp-deferred)
+	;; try to disable automatic-doc-help in echo erea
+	;; when it is enabled, lsp will send requests to lsp-server
+	;; when cursor is moved, which may block the editor
+	;; https://github.com/emacs-lsp/lsp-mode/issues/1223
+	(lsp-signature-auto-activate nil)
+	(lsp-signature-render-documentation nil)
+    (lsp-enable-snippet t)
+    (lsp-keep-workspace-alive t)
+    (lsp-enable-xref t)
+    (lsp-enable-imenu t)
+    (lsp-enable-completion-at-point nil)
+    (lsp-enable-file-watchers nil)
+    (lsp-diagnostic-package :flymake)
+    (lsp-prefer-capf t)
+    (lsp-auto-guess-root t)
+    (read-process-output-max (* 1024 1024))
+	;; Python
+    (lsp-pyls-configuration-sources ["flake8"])
+	:hook  ((c++-mode . lsp-deferred)
           (go-mode . lsp-deferred)
-          (python-mode . lsp-deferred)
+          ;;(python-mode . lsp-deferred)
           (rust-mode . lsp-deferred)
-		  (html-mode . lsp-deferred)
-		  (js-mode . lsp-deferred)
-		  (web-mode . lsp-deferred)
-		  (typescript-mode . lsp-deferred)
-		  (rust-mode . lsp-deferred)
-		  (typescript-mode . lsp-deferred)
-		  (json-mode . lsp-deferred)
-		  (yaml-mode . lsp-deferred)
-		  (dockerfile-mode . lsp-deferred)
-		  (shell-mode . lsp-deferred)
-		  (css-mode . lsp-deferred)
-		  (prog-major-mode . lsp-prog-major-mode-enable)
           (clojure-mode . lsp-deferred)
           (clojurec-mode . lsp-deferred)
           (clojurescript-mode . lsp-deferred))
 	
     :config
-	(progn
+    ;; setup prog mode hook
+    (add-hook 'go-mode-hook #'lsp)
+    (add-hook 'python-mode-hook #'lsp)
+    (add-hook 'c++-mode-hook #'lsp)
+    (add-hook 'c-mode-hook #'lsp)
+    (add-hook 'rust-mode-hook #'lsp)
+    (add-hook 'html-mode-hook #'lsp)
+    (add-hook 'js-mode-hook #'lsp)
+    (add-hook 'web-mode #'lsp)
+    (add-hook 'typescript-mode-hook #'lsp)
+    (add-hook 'json-mode-hook #'lsp)
+    (add-hook 'yaml-mode-hook #'lsp)
+    (add-hook 'dockerfile-mode-hook #'lsp)
+    (add-hook 'shell-mode-hook #'lsp)
+    (add-hook 'css-mode-hook #'lsp)
+
+    (setq company-minimum-prefix-length 1
+	  company-idle-delay 0.200)
+
     (require 'lsp-clients)
-    (setq lsp-message-project-root-warning t
-	    lsp-prefer-flymake nil
-	    lsp-restart 'ignore
-	    lsp-eldoc-hook nil
-	    lsp-eldoc-enable-hover nil
-	    lsp-auto-configure nil
-	    lsp-enable-symbol-highlighting nil)
-
-	(dolist (m '(clojure-mode
-               clojurec-mode
-               clojurescript-mode
-               clojurex-mode))
-	
-    (add-to-list 'lsp-language-id-configuration `(,m . "clojure")))
-
-    ;;(require 'lsp-clients)
-    ;;(lsp-register-client
-     ;;(make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-	;;	      :major-modes '(go-mode)
-	;;	      :server-id 'gopls))
-    ;;(lsp-define-stdio-client lsp-python "python"
-	;;		     #'projectile-project-root
-	;;		     '("pyls"))
-	
-  )
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+		      :major-modes '(go-mode)
+		      :server-id 'gopls))
+    (lsp-define-stdio-client lsp-python "python"
+			     #'projectile-project-root
+			     '("pyls"))
+    )
 
   (use-package company-lsp
     :ensure t
     :commands company-lsp
-    :config (push 'company-lsp company-backends)
-	(setq company-lsp-async t
-		  company-lsp-cache-candidates 'auto
-		  company-lsp-match-candidate-predicate #'company-lsp-match-candidate-flex
-	)
-  )
+    :config (push 'company-lsp company-backends))
 
   (use-package lsp-ui
-    :commands lsp-ui-mode
-	:after lsp-mode
-	:custom
-	;; lsp-ui-doc
-	(lsp-ui-doc-enable t)
-	(lsp-ui-doc-header t)
-	(lsp-ui-doc-include-signature t)
-	(lsp-ui-sideline-enable nil)
-	(lsp-ui-doc-position 'top)
-	(lsp-ui-doc-max-width  60)
-	(lsp-ui-doc-max-height 20)
-	(lsp-ui-doc-use-childframe t)
-	(lsp-ui-doc-use-webkit nil)
-	
-	;; lsp-ui-flycheck
-	(lsp-ui-flycheck-enable t)
-	(lsp-ui-flycheck-list-position 'right)
-	(lsp-ui-flycheck-live-reporting t)
-	;; lsp-ui-sideline
-	(lsp-ui-sideline-enable t)
-	(lsp-ui-sideline-ignore-duplicate t)
-	(lsp-ui-sideline-show-symbol t)
-	(lsp-ui-sideline-show-hover t)
-	(lsp-ui-sideline-show-diagnostics t)
-	(lsp-ui-sideline-show-code-actions t)
-	(lsp-ui-sideline-code-actions-prefix "")
+    :hook (lsp-mode . lsp-ui-mode)
+    :config
+    (setq lsp-ui-doc-max-height 8
+	  lsp-ui-doc-max-width 35
+	  lsp-ui-sideline-ignore-duplicate t
+	  ;; lsp-ui-doc is redundant with and more invasive than
+	  ;; `+lookup/documentation'
+	  lsp-ui-doc-enable nil
+	  ;; Don't show symbol definitions in the sideline. They are pretty noisy,
+	  ;; and there is a bug preventing Flycheck errors from being shown (the
+	  ;; errors flash briefly and then disappear).
+	  lsp-ui-sideline-show-hover nil)
 
-	;; lsp-ui-imenu
-	(lsp-ui-imenu-enable nil)
-	(lsp-ui-imenu-kind-position 'top)
-	
-	;; lsp-ui-peek
-	(lsp-ui-peek-enable t)
-	(lsp-ui-peek-always-show t)
-	(lsp-ui-peek-peek-height 25)
-	(lsp-ui-peek-list-width 60)
-	;;(lsp-ui-peek-fontify 'always)
-	(lsp-ui-peek-fontify 'on-demand)	; never, on-demand, or always
-	:preface
-    (defun ladicle/toggle-lsp-ui-doc ()
-      (interactive)
-      (if lsp-ui-doc-mode
-          (progn
-            (lsp-ui-doc-mode -1)
-            (lsp-ui-doc--hide-frame))
-        (lsp-ui-doc-mode 1)))
-    :bind
-    (:map lsp-mode-map
-	  ("C-c C-r" . lsp-ui-peek-find-references)
-	  ("C-c C-j" . lsp-ui-peek-find-definitions)
-	  ("C-c i"   . lsp-ui-peek-find-implementation)
-	  ("C-c m"   . lsp-ui-imenu)
-	  ("C-c s"   . lsp-ui-sideline-mode)
-	  ("C-c d"   . ladicle/toggle-lsp-ui-doc))
-	:hook
-	(lsp-mode . lsp-ui-mode)
-  )
+    (set-lookup-handlers! 'lsp-ui-mode :async t
+	:definition 'lsp-ui-peek-find-definitions
+	:implementations 'lsp-ui-peek-find-implementation
+	:references 'lsp-ui-peek-find-references))
 
   (use-package helm-lsp
     :commands helm-lsp-workspace-symbol helm-lsp-global-workspace-symbol)

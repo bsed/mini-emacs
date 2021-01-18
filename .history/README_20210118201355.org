@@ -575,9 +575,7 @@
 	(add-hook 'go-mode-hook 'company-mode)
     ;; Optionally enable completion-as-you-type behavior.
 	(setq company-idle-delay 0)
-	;;(setq company-minimum-prefix-length 4)
-	(setq company-minimum-prefix-length 1
-	  company-idle-delay 0.200)
+	(setq company-minimum-prefix-length 4)
 	(setq company-dabbrev-downcase nil)
 	(setq company-selection-wrap-around t))
 
@@ -703,8 +701,6 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
-    ;;:requires hydra helm helm-lsp
-	:requires hydra helm helm-lsp
     :commands (lsp lsp-deferred)
     :ensure t
     :custom
@@ -713,13 +709,6 @@
 		;; when it is enabled, lsp will send requests to lsp-server
 		;; when cursor is moved, which may block the editor
 		;; https://github.com/emacs-lsp/lsp-mode/issues/1223
-		(lsp-log-io nil)
-		;; debug
-		(lsp-print-io nil)
-		(lsp-trace nil)
-		(lsp-print-performance t)
-		(lsp-response-timeout 20)
-		;;(lsp-prefer-flymake t)	   ; t(flymake), nil(lsp-ui), or :none
 		(lsp-signature-auto-activate nil)
 		(lsp-signature-render-documentation nil)
 		(lsp-enable-snippet t)
@@ -732,8 +721,7 @@
 		(lsp-diagnostic-package :flymake)
 		(lsp-prefer-capf t)
 		(lsp-auto-guess-root t)
-		;;(lsp-document-sync-method 2)
-		(lsp-document-sync-method 'incremental) ; none, full, incremental, or nil
+		(lsp-document-sync-method 2)
 		(lsp-inhibit-message t)
 		(lsp-message-project-root-warning t)
 		;;(create-lockfiles nil)
@@ -759,49 +747,46 @@
 		  (dockerfile-mode . lsp-deferred)
 		  (shell-mode . lsp-deferred)
 		  (css-mode . lsp-deferred)
-		  (prog-major-mode . lsp-prog-major-mode-enable)
+
           (clojure-mode . lsp-deferred)
           (clojurec-mode . lsp-deferred)
           (clojurescript-mode . lsp-deferred))
 	
     :config
-	(progn
-    (require 'lsp-clients)
-    (setq lsp-message-project-root-warning t
-	    lsp-prefer-flymake nil
-	    lsp-restart 'ignore
-	    lsp-eldoc-hook nil
-	    lsp-eldoc-enable-hover nil
-	    lsp-auto-configure nil
-	    lsp-enable-symbol-highlighting nil)
-
 	(dolist (m '(clojure-mode
                clojurec-mode
                clojurescript-mode
                clojurex-mode))
-	
     (add-to-list 'lsp-language-id-configuration `(,m . "clojure")))
+	:init
+	(unbind-key "C-l")
+	:bind
+	(("C-l C-l"  . lsp)
+	("C-l h"    . lsp-describe-session)
+	("C-l t"    . lsp-goto-type-definition)
+	("C-l r"    . lsp-rename)
+	("C-l <f5>" . lsp-restart-workspace)
+	("C-l l"    . lsp-lens-mode))
+	:hook
+	(prog-major-mode . lsp-prog-major-mode-enable)
 
-    ;;(require 'lsp-clients)
-    ;;(lsp-register-client
-     ;;(make-lsp-client :new-connection (lsp-stdio-connection "gopls")
-	;;	      :major-modes '(go-mode)
-	;;	      :server-id 'gopls))
-    ;;(lsp-define-stdio-client lsp-python "python"
-	;;		     #'projectile-project-root
-	;;		     '("pyls"))
+    
+
+    (require 'lsp-clients)
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "gopls")
+		      :major-modes '(go-mode)
+		      :server-id 'gopls))
+    (lsp-define-stdio-client lsp-python "python"
+			     #'projectile-project-root
+			     '("pyls"))
 	
   )
 
   (use-package company-lsp
     :ensure t
     :commands company-lsp
-    :config (push 'company-lsp company-backends)
-	(setq company-lsp-async t
-		  company-lsp-cache-candidates 'auto
-		  company-lsp-match-candidate-predicate #'company-lsp-match-candidate-flex
-	)
-  )
+    :config (push 'company-lsp company-backends))
 
   (use-package lsp-ui
     :commands lsp-ui-mode
@@ -811,7 +796,6 @@
 	(lsp-ui-doc-enable t)
 	(lsp-ui-doc-header t)
 	(lsp-ui-doc-include-signature t)
-	(lsp-ui-sideline-enable nil)
 	(lsp-ui-doc-position 'top)
 	(lsp-ui-doc-max-width  60)
 	(lsp-ui-doc-max-height 20)
@@ -820,8 +804,7 @@
 	
 	;; lsp-ui-flycheck
 	(lsp-ui-flycheck-enable t)
-	(lsp-ui-flycheck-list-position 'right)
-	(lsp-ui-flycheck-live-reporting t)
+	
 	;; lsp-ui-sideline
 	(lsp-ui-sideline-enable t)
 	(lsp-ui-sideline-ignore-duplicate t)
@@ -829,8 +812,7 @@
 	(lsp-ui-sideline-show-hover t)
 	(lsp-ui-sideline-show-diagnostics t)
 	(lsp-ui-sideline-show-code-actions t)
-	(lsp-ui-sideline-code-actions-prefix "")
-
+	
 	;; lsp-ui-imenu
 	(lsp-ui-imenu-enable nil)
 	(lsp-ui-imenu-kind-position 'top)
@@ -838,28 +820,15 @@
 	;; lsp-ui-peek
 	(lsp-ui-peek-enable t)
 	(lsp-ui-peek-always-show t)
-	(lsp-ui-peek-peek-height 25)
-	(lsp-ui-peek-list-width 60)
-	;;(lsp-ui-peek-fontify 'always)
-	(lsp-ui-peek-fontify 'on-demand)	; never, on-demand, or always
-	:preface
-    (defun ladicle/toggle-lsp-ui-doc ()
-      (interactive)
-      (if lsp-ui-doc-mode
-          (progn
-            (lsp-ui-doc-mode -1)
-            (lsp-ui-doc--hide-frame))
-        (lsp-ui-doc-mode 1)))
-    :bind
-    (:map lsp-mode-map
-	  ("C-c C-r" . lsp-ui-peek-find-references)
-	  ("C-c C-j" . lsp-ui-peek-find-definitions)
-	  ("C-c i"   . lsp-ui-peek-find-implementation)
-	  ("C-c m"   . lsp-ui-imenu)
-	  ("C-c s"   . lsp-ui-sideline-mode)
-	  ("C-c d"   . ladicle/toggle-lsp-ui-doc))
+	(lsp-ui-peek-peek-height 30)
+	(lsp-ui-peek-list-width 30)
+	(lsp-ui-peek-fontify 'always)
 	:hook
 	(lsp-mode . lsp-ui-mode)
+	:bind
+	(("C-l s"   . lsp-ui-sideline-mode)
+	("C-l C-d" . lsp-ui-peek-find-definitions)
+	("C-l C-r" . lsp-ui-peek-find-references))
   )
 
   (use-package helm-lsp
